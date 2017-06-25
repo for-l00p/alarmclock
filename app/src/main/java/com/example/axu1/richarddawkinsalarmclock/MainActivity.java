@@ -43,6 +43,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     final Calendar calendar = Calendar.getInstance();
 
+    public boolean beatMovement = false;
+    public int beatCounter = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,18 +136,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             long curTime = System.currentTimeMillis();
 
-            if ((curTime - lastUpdate) > 100) {
+            if ((curTime - lastUpdate) > 5) {
                 long diffTime = (curTime - lastUpdate);
                 lastUpdate = curTime;
 
-                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+                float speed = (Math.abs(x) +  Math.abs(y) +  Math.abs(z)) * 15;
+                Log.d("Beats", "" + speed);
+               if (beatCounter == 10){
+                   myIntent.putExtra("extra", "no");
+                   sendBroadcast(myIntent);
 
-                if (speed > SHAKE_THRESHOLD) {
-                    myIntent.putExtra("extra", "no");
-                    sendBroadcast(myIntent);
+                   alarmManager.cancel(pending_intent);
+                   setAlarmText("Alarm canceled");
+                   beatCounter = 0;
+               }
+               else if (speed > SHAKE_THRESHOLD && !beatMovement) {
+                    beatMovement = true;
+                }
 
-                    alarmManager.cancel(pending_intent);
-                    setAlarmText("Alarm canceled");
+                else if(beatMovement && speed < 400){
+                    beatMovement = false;
+                    Log.d("Beats", "kuyfkyfdydjydyrdyd" +beatCounter);
+                    beatCounter ++;
                 }
 
                 last_x = x;
